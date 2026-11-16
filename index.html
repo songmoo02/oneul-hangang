@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>오늘의 한강</title>
+</head>
+<body>
+  <div id="app">
+    <canvas id="view" tabindex="0"></canvas>
+
+    <div id="touch" class="touchui" hidden>
+      <div id="tpad" class="tpad"><div id="tknob" class="tknob"></div></div>
+      <div class="ttop">
+        <button data-key="KeyM">지도</button><button data-key="KeyP">사진</button><button data-key="Escape">메뉴</button>
+      </div>
+      <div class="tbtns">
+        <button data-key="KeyQ" class="s">물수제비</button>
+        <button data-key="KeyK" class="s">뽀뽀</button>
+        <button data-key="KeyG" data-long="Digit9" class="s">인사</button>
+        <button data-key="KeyF" data-long="Digit0" class="m">앉기</button>
+        <button id="trun" class="m">달리기</button>
+        <button data-key="KeyE" class="l">E</button>
+      </div>
+    </div>
+    <div id="hud" class="hidden">
+      <div class="topleft">
+        <div class="clockrow"><span id="clock">16:20</span><span id="phase">노을</span></div>
+        <div class="sub"><span id="weather">☀ 맑음</span></div>
+      </div>
+      <div id="place" class="place"></div>
+      <div id="peers" class="peers"></div>
+      <div id="notice" class="notice"></div>
+      <div id="hint" class="hint">
+        <b>W A S D</b> 걷기 · <b>Shift</b> 달리기 · <b>E</b> 상호작용 · <b>F</b> 앉기 · <b>G</b> 인사 · <b>K</b> 뽀뽀(친구 곁에서) · <b>Q</b> 물수제비 · <b>P</b> 사진 · <b>M</b> 지도·순간이동 · <b>Esc</b> 메뉴
+      </div>
+      <div class="miniwrap"><canvas id="minimap"></canvas><span class="north">N</span></div>
+      <div id="caption" class="caption"></div>
+      <div id="prompt" class="prompt"></div>
+      <div id="toast" class="toast"></div>
+      <div id="fps" class="fps"></div>
+    </div>
+
+    <div class="bigmap">
+      <p class="maphelp"><b>지도를 클릭하면 그곳으로 순간이동해요</b> · M 키로 닫기</p>
+      <canvas id="bigmap"></canvas>
+      <div id="places" class="places"></div>
+    </div>
+
+    <div id="photo" class="photo">
+      <div class="prow" id="pfilters"></div>
+      <div class="prow">
+        <label>화각 <input id="pfov" type="range" min="22" max="95" step="1" value="55" /></label>
+        <button id="phide">캐릭터 숨기기</button>
+        <button id="pshoot" class="primary">촬영 (Space)</button>
+        <button id="palbum">앨범 <span id="pcount">0</span></button>
+        <button id="pclose">닫기 (P)</button>
+      </div>
+    </div>
+    <div id="flash" class="flash"></div>
+    <div id="album" class="album">
+      <div class="albumbox">
+        <div class="albumhead"><h2>앨범</h2><button id="albumclose">닫기</button></div>
+        <p class="albumnote">사진은 이 창을 닫기 전까지 보관돼요. '저장'이 막힌 환경에서는 사진을 마우스 오른쪽 버튼으로 눌러 저장하세요.</p>
+        <div id="albumgrid" class="albumgrid"></div>
+      </div>
+    </div>
+
+    <div id="menu" class="menu">
+      <div class="panel">
+        <h1>오늘의 한강</h1>
+        <p class="lead">잠시 쉬어가요. 강은 계속 흐르고 있어요.</p>
+        <div class="row main">
+          <button data-act="resume" class="primary">계속 걷기</button>
+          <button data-act="reset">다른 곳에서 시작</button>
+        </div>
+        <h2>조작</h2>
+        <p class="keys"><b>W A S D</b> 걷기 · <b>Shift</b> 달리기 · <b>마우스</b> 시점 · <b>휠</b> 줌<br><b>E</b> 상호작용(타기·사기·먹기·쓰다듬기) · <b>F</b> 앉기 · <b>G</b> 인사 · <b>K</b> 뽀뽀(친구 곁에서) · <b>Q</b> 물수제비 · <b>P</b> 사진 · <b>M</b> 지도(클릭해서 순간이동) · <b>Esc</b> 메뉴</p>
+        <h2>캐릭터</h2>
+        <div class="genders"><button data-gender="f" class="on">여자</button><button data-gender="m">남자</button></div>
+        <h2>소리</h2>
+        <div class="vols">
+          <label>전체 <input type="range" data-vol="master" min="0" max="1" step="0.05" value="0.8" /></label>
+          <label>음악 <input type="range" data-vol="music" min="0" max="1" step="0.05" value="0.6" /></label>
+          <label>환경음 <input type="range" data-vol="amb" min="0" max="1" step="0.05" value="0.8" /></label>
+        </div>
+        <h2>그래픽 품질 <small id="qnote"></small></h2>
+        <div class="row seg">
+          <button data-q="low">낮음</button><button data-q="mid">중간</button><button data-q="high">높음</button>
+        </div>
+        <details>
+          <summary>미리보기 도구 (확인용)</summary>
+          <h2>시간으로 이동</h2>
+          <div class="row seg">
+            <button data-time="5.9">새벽</button><button data-time="8.5">아침</button><button data-time="13.5">오후</button>
+            <button data-time="17.25">노을</button><button data-time="18.25">초저녁</button><button data-time="21">밤</button>
+          </div>
+          <h2>시간 흐름</h2>
+          <div class="row seg">
+            <button data-speed="0">정지</button><button data-speed="1">보통</button><button data-speed="20">20배</button>
+          </div>
+          <h2>날씨</h2>
+          <div class="row seg wrap">
+            <button data-weather="auto">자동</button><button data-weather="clear">맑음</button><button data-weather="cloudy">구름</button>
+            <button data-weather="overcast">흐림</button><button data-weather="drizzle">가랑비</button><button data-weather="rain">비</button><button data-weather="fog">안개</button><button data-rainbow>무지개</button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div id="intro" class="intro">
+      <div class="introbox">
+        <p class="kicker">여의도에서 반포까지</p>
+        <h1>오늘의 한강</h1>
+        <div class="bar"><i id="bar"></i></div>
+        <p id="loadtext" class="loadtext">강을 불러오는 중…</p>
+        <div class="genders"><button data-gender="f" class="on">여자 캐릭터</button><button data-gender="m">남자 캐릭터</button></div>
+        <button id="start" class="start" hidden>산책 시작하기</button>
+        <p id="starthelp" class="help" hidden>클릭하면 마우스로 시점을 돌릴 수 있어요</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
